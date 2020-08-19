@@ -5,7 +5,7 @@ from multiprocessing import Pool
 import numpy as np
 import pygad
 
-from agent import HighLevelAgent, IAgent
+from agent import ReflexiveHierarchicalAgent, IAgent
 from features import FringeSmoothness, HoleCount, EmptyRowsCount, AverageHeight
 from utility import Utility
 from world import Config, World
@@ -32,7 +32,7 @@ def run_simulation(index, weights):
     np.random.seed(seed + index)
     world = World.from_config(config)
     utility = Utility([FringeSmoothness(), HoleCount(), EmptyRowsCount(), AverageHeight()], weights)
-    agent = HighLevelAgent(utility)
+    agent = ReflexiveHierarchicalAgent(utility)
     return simulate_game(world, agent)
 
 

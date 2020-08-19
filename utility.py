@@ -8,7 +8,7 @@ class Utility:
         self.features = features
         self.coefficients = coefficients
 
-    def value(self, world) -> Tuple[float, List[float], List[float]]:
+    def __call__(self, world) -> Tuple[float, List[float], List[float]]:
         feature_values = [feature.value(world) for feature in self.features]
         weighted_feature_values = [
             coefficient * feature_value

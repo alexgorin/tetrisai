@@ -3,8 +3,8 @@ from queue import Queue
 
 
 class Node:
-    def __init__(self, path: List):
-        self.path = path
+    def __init__(self, path: Optional[List] = None):
+        self.path = path or []
 
     def depth(self):
         return len(self.path)
@@ -36,8 +36,12 @@ class FringeQueue(IFringe):
 
 
 class StateTree:
-    def __init__(self, root_node: Node, fringe_type: Callable[[], IFringe]):
+    def __init__(
+            self, root_node: Node, evaluate: Callable[[Node], float],
+            fringe_type: Callable[[], IFringe] = FringeQueue
+    ):
         self.root_node = root_node
+        self.evaluate = evaluate
         self.fringe = fringe_type()
         self.fringe.put(self.root_node)
 
@@ -51,11 +55,9 @@ class StateTree:
                 for child in children:
                     self.fringe.put(child)
 
-    def max(self, depth_limit):
+    def max(self, depth_limit) -> Node:
         return max(self.leaves(depth_limit), key=self.evaluate)
 
     def expand_node(self, node) -> Iterator[Node]:
         raise NotImplementedError
 
-    def evaluate(self, node: Node) -> float:
-        raise NotImplementedError

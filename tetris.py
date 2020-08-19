@@ -89,6 +89,7 @@ class Game:
             self.world.figure.map_fragment, self.world.figure_x, self.world.figure_y, cell_size, Color.FIGURE)
         self.draw_map_fragment(
             self.world.next_figure.map_fragment, cols + 1, 2, cell_size, Color.FIGURE)
+        pygame.display.update()
 
     def if_not_paused(self, func: Callable) -> Callable:
         @functools.wraps(func)
@@ -130,7 +131,6 @@ class Game:
                 time.sleep(0.1)
                 continue
             self.render_game_state()
-            pygame.display.update()
             clock.tick(self.config.MAXFPS)
 
             for event in pygame.event.get():
@@ -152,27 +152,35 @@ class Game:
 
         clock = pygame.time.Clock()
         while True:
-            self.screen.fill((0, 0, 0))
             if self.game_over:
                 break
 
+            self.screen.fill((0, 0, 0))
             self.render_game_state()
-            pygame.display.update()
-            clock.tick(self.config.MAXFPS)
 
+            clock.tick(self.config.MAXFPS)
             for event in pygame.event.get():
                 if event.type == TIMER_EVENT:
                     self.world.step()
                     if self.world.is_in_terminal_state():
                         self.game_over = True
                         break
+                    recent_action = None
                     while True:
                         action = agent.choose_action(self.world)
-                        agent.act(self.world, action)
-                        if action == TetrisAction.ALL_WAY_DOWN:
+                        if recent_action is None or action == recent_action:
+                            # agent.act(self.world, action)
+                            action.apply(self.world)
+                            recent_action = action
+                        else:
+                            self.screen.fill((0, 0, 0))
+                            self.render_game_state()
+                            time.sleep(0.2)
+                            action.apply(self.world)
+                            # agent.act(self.world, action)
                             break
-
                     pygame.event.clear()  # don't queue multiple events during debugging
+                    time.sleep(0.2)
                 elif event.type == pygame.QUIT:
                     self.quit()
 

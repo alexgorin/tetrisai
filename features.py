@@ -55,16 +55,6 @@ class FringeSmoothness(Feature):
 
     @staticmethod
     def _fringe(world: World) -> List[int]:
-        # world_height = world.board.height()
-        # fringe = np.asarray([world.board.height()] * world.board.width())
-        #
-        # # iterate from the bottom for optimization
-        # for row_index, row in enumerate(world.board.map_fragment[::-1]):
-        #     filled_cells = np.where(row == 1)
-        #     if not filled_cells:
-        #         break
-        #     fringe[filled_cells] = world_height - row_index - 1
-
         fringe = []
         for col_index in range(world.board.width()):
             for row_index in range(world.board.height()):
