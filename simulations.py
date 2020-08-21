@@ -1,4 +1,5 @@
-from agent import ReflexiveHierarchicalAgent, IAgent, PlanningOneMoveHierarchicalAgent, ProbabilisticPlanningHierarchicalAgent
+from agent import ReflexiveHierarchicalAgent, IAgent, PlanningOneMoveHierarchicalAgent, \
+    ProbabilisticPlanningHierarchicalAgent, LimitedProbabilisticPlanningHierarchicalAgent
 from features import FringeSmoothness, HoleCount, EmptyRowsCount, AverageHeight
 from utility import Utility
 from world import Config, World
@@ -31,8 +32,9 @@ def run_simulation(config):
         [FringeSmoothness(), HoleCount(), EmptyRowsCount(), AverageHeight()],
         [3.2375932, 14.10950807, 22.32253916, 30.96122022]
     )
-    agent = ProbabilisticPlanningHierarchicalAgent(utility)
-    # agent = PlanningOneMoveHierarchicalAgent(utility)
+    # agent = LimitedProbabilisticPlanningHierarchicalAgent(utility)
+    # agent = ProbabilisticPlanningHierarchicalAgent(utility)
+    agent = PlanningOneMoveHierarchicalAgent(utility)
     # agent = ReflexiveHierarchicalAgent(utility)
     return simulate_game(world, agent)
 
@@ -55,13 +57,14 @@ def profile_simulation():
     print(s.getvalue())
 
 
-def run_simulation_batch():
+def run_simulation_batch(simulations_count=10, processes=10):
     config = Config()
-    simulations_count = 10
     start = time.time()
-
-    with Pool(processes=10) as pool:
-        results = pool.map(run_simulation, [config] * simulations_count)
+    if processes > 1:
+        with Pool(processes=min(simulations_count, processes)) as pool:
+            results = pool.map(run_simulation, [config] * simulations_count)
+    else:
+        results = [run_simulation(config)]
 
     print(f"{time.time() - start}s passed.")
     print(results)
@@ -70,4 +73,9 @@ def run_simulation_batch():
 
 if __name__ == '__main__':
     # run_simulation_batch()
-    profile_simulation()
+    # profile_simulation()
+    run_simulation_batch(simulations_count=1, processes=1)
+    """
+    4472.446388959885s passed.
+    49999
+    """
