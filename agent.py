@@ -8,7 +8,8 @@ import numpy as np
 from utility import Utility
 from world import World, Figure
 from action import IAction, TetrisAction, MoveToPosition
-from state_tree import StateTree, Node
+from state_tree import StateTree, Node, ParallelStateTree
+from multiprocessing import Pool
 #
 # class TetrisAction(Enum):
 #     LEFT = 'left'
@@ -73,6 +74,10 @@ from state_tree import StateTree, Node
 #         return world_copy
 
 
+def avg(elements: List):
+    return sum(elements) / len(elements)
+
+
 def random_utility(world: World):
     return np.random.randint(0, 10000)
 
@@ -129,6 +134,14 @@ class TetrisStateTree(StateTree):
             yield TetrisWorldNode(action.apply_to_copy(node.world), path)
 
 
+class ParallelTetrisStateTree(ParallelStateTree):
+
+    def expand_node(self, node: TetrisWorldNode) -> Iterator[Node]:
+        for action in possible_actions(node.world):
+            path = node.path + [action]
+            yield TetrisWorldNode(action.apply_to_copy(node.world), path)
+
+
 class ReflexiveHierarchicalAgent(IAgent):
     def __init__(self, utility: Callable):
         self._plan: List[TetrisAction] = []
@@ -160,4 +173,34 @@ class ReflexiveHierarchicalAgent(IAgent):
 class PlanningOneMoveHierarchicalAgent(ReflexiveHierarchicalAgent):
     def _new_plan(self, world) -> List[TetrisAction]:
         state_tree = TetrisStateTree(TetrisWorldNode(world), lambda node: self.utility(node.world))
+        return state_tree.max(depth_limit=2).path[0].unroll(world)
+
+
+class ProbabilisticPlanningHierarchicalAgent(ReflexiveHierarchicalAgent):
+    def __init__(self, utility: Callable, processes: int = 10):
+        super().__init__(utility)
+        self.pool = Pool(processes=processes) if processes > 0 else None
+
+    def __getstate__(self):
+        return self._plan, self.utility
+
+    def __setstate__(self, state):
+        self._plan, self.utility = state
+
+    def _utility(self, node: Node):
+        return self.utility(node.world)
+
+    def _probabilistic_utility(self, node: Node):
+        utilities_for_next_figure = []
+        for figure in node.world.figure_factory.figures:
+            world_copy = node.world.deepcopy()
+            world_copy.figure = figure
+            state_tree = TetrisStateTree(TetrisWorldNode(world_copy), self._utility)
+            leaves_utilities = (state_tree.evaluate(leaf)[0] for leaf in state_tree.leaves(depth=1))
+            utilities_for_next_figure.append(max(leaves_utilities))
+        # TODO: weights if the distribution is not uniform
+        return avg(utilities_for_next_figure)
+
+    def _new_plan(self, world) -> List[TetrisAction]:
+        state_tree = ParallelTetrisStateTree(TetrisWorldNode(world), self._probabilistic_utility, pool=self.pool)
         return state_tree.max(depth_limit=2).path[0].unroll(world)

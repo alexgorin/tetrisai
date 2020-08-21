@@ -1,4 +1,4 @@
-from agent import ReflexiveHierarchicalAgent, IAgent, PlanningOneMoveHierarchicalAgent
+from agent import ReflexiveHierarchicalAgent, IAgent, PlanningOneMoveHierarchicalAgent, ProbabilisticPlanningHierarchicalAgent
 from features import FringeSmoothness, HoleCount, EmptyRowsCount, AverageHeight
 from utility import Utility
 from world import Config, World
@@ -27,8 +27,12 @@ def run_simulation(config):
     # [12.29972137, 24.01771438, 4.99028912]
     # [2.84854145, 10.82518706, 26.9453779, 27.70104868]
     # [4.37375974, 8.74747811, 21.85225262, 6.00195256]
-    utility = Utility([FringeSmoothness(), HoleCount(), EmptyRowsCount(), AverageHeight()], [ 3.2375932 , 14.10950807, 22.32253916, 30.96122022])
-    agent = PlanningOneMoveHierarchicalAgent(utility)
+    utility = Utility(
+        [FringeSmoothness(), HoleCount(), EmptyRowsCount(), AverageHeight()],
+        [3.2375932, 14.10950807, 22.32253916, 30.96122022]
+    )
+    agent = ProbabilisticPlanningHierarchicalAgent(utility)
+    # agent = PlanningOneMoveHierarchicalAgent(utility)
     # agent = ReflexiveHierarchicalAgent(utility)
     return simulate_game(world, agent)
 
@@ -65,5 +69,5 @@ def run_simulation_batch():
 
 
 if __name__ == '__main__':
-    run_simulation_batch()
-    # profile_simulation()
+    # run_simulation_batch()
+    profile_simulation()
