@@ -1,4 +1,8 @@
-from agent import ReflexiveHierarchicalAgent, IAgent, PlanningOneMoveHierarchicalAgent, \
+"""
+Simulating the games without actual rendering.
+"""
+
+from agent import ReflexiveHierarchicalAgent, IAgent, PlanningTwoMovesHierarchicalAgent, \
     ProbabilisticPlanningHierarchicalAgent, LimitedProbabilisticPlanningHierarchicalAgent
 from features import FringeSmoothness, HoleCount, EmptyRowsCount, AverageHeight
 from utility import Utility
@@ -22,19 +26,14 @@ def simulate_game(world: World, agent: IAgent, max_iterations: int = 50000) -> i
 
 
 def run_simulation(config):
-    # np.random.seed(123)
     world = World.from_config(config)
-    # [16.10236407, 23.285073,  3.22214562])
-    # [12.29972137, 24.01771438, 4.99028912]
-    # [2.84854145, 10.82518706, 26.9453779, 27.70104868]
-    # [4.37375974, 8.74747811, 21.85225262, 6.00195256]
     utility = Utility(
         [FringeSmoothness(), HoleCount(), EmptyRowsCount(), AverageHeight()],
         [3.2375932, 14.10950807, 22.32253916, 30.96122022]
     )
     # agent = LimitedProbabilisticPlanningHierarchicalAgent(utility)
     # agent = ProbabilisticPlanningHierarchicalAgent(utility)
-    agent = PlanningOneMoveHierarchicalAgent(utility)
+    agent = PlanningTwoMovesHierarchicalAgent(utility)
     # agent = ReflexiveHierarchicalAgent(utility)
     return simulate_game(world, agent)
 
@@ -75,7 +74,3 @@ if __name__ == '__main__':
     # run_simulation_batch()
     # profile_simulation()
     run_simulation_batch(simulations_count=1, processes=1)
-    """
-    4472.446388959885s passed.
-    49999
-    """

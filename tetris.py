@@ -1,3 +1,10 @@
+"""
+The actual game part.
+Slightly modified https://gist.github.com/silvasur/565419,
+with all the mechanics moved to world.py and completely restructured.
+Improving the code in this file isn't worth the effort, so I won't be doing that.
+"""
+
 import functools
 import time
 from typing import Tuple, Callable, Dict
@@ -7,7 +14,7 @@ import pygame
 import sys
 
 from world import World, Config
-from agent import IAgent, TetrisAction
+from agent import IAgent
 
 
 class Color:
@@ -47,7 +54,7 @@ class Game:
     def init_game(self):
         self.world = World.from_config(self.config)
         self.key_actions = self.create_key_actions()
-        pygame.time.set_timer(TIMER_EVENT, 200)
+        pygame.time.set_timer(TIMER_EVENT, 100)
 
     def draw_map_fragment(
             self, matrix: np.ndarray, offset_x: int, offset_y: int, cell_size: int, color: Tuple[int, int, int]
@@ -169,24 +176,15 @@ class Game:
                     while True:
                         action = agent.choose_action(self.world)
                         if recent_action is None or action == recent_action:
-                            # agent.act(self.world, action)
                             action.apply(self.world)
                             recent_action = action
                         else:
                             self.screen.fill((0, 0, 0))
                             self.render_game_state()
-                            time.sleep(0.2)
+                            time.sleep(0.1)
                             action.apply(self.world)
-                            # agent.act(self.world, action)
                             break
                     pygame.event.clear()  # don't queue multiple events during debugging
-                    time.sleep(0.2)
+                    time.sleep(0.1)
                 elif event.type == pygame.QUIT:
                     self.quit()
-
-#
-#
-# if __name__ == '__main__':
-#     game = Game(Config())
-#     # game.run()
-#     game.run_agent(Agent())

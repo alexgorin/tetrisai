@@ -1,7 +1,9 @@
-from abc import ABCMeta
-from typing import List, Callable, Optional, Iterator, Tuple, Iterable
-from queue import Queue
+"""
+Considering future states and evaluating them.
+"""
 from multiprocessing import Pool
+from queue import Queue
+from typing import List, Callable, Optional, Iterator, Tuple, Iterable
 
 
 class Node:
@@ -119,29 +121,3 @@ class StateTree:
 
     def expand_node(self, node) -> Iterator[Node]:
         raise NotImplementedError
-
-#     def node_value(self, node: Node) -> Tuple[Node, float]:
-#         return node, self.evaluate(node)
-#
-#
-# class ParallelStateTree(StateTree, metaclass=ABCMeta):
-#     def __init__(
-#             self, root_node: Node, evaluate: Callable[[Node], float],
-#             fringe_type: Callable[[], IFringe] = FringeListQueue,
-#             pool: Pool = None,
-#     ):
-#         super().__init__(root_node, evaluate, fringe_type)
-#         self.pool = pool
-#
-#     def __getstate__(self):
-#         return self.root_node, self.evaluate, self.fringe
-#
-#     def __setstate__(self, state):
-#         self.root_node, self.evaluate, self.fringe = state
-#
-#     def max(self, depth_limit) -> Node:
-#         if self.pool:
-#             nodes_and_values = self.pool.map(super().node_value, super().leaves(depth_limit))
-#             return max(nodes_and_values, key=lambda e: e[1])[0]
-#         else:
-#             return super().max(depth_limit)

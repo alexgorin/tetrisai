@@ -48,15 +48,7 @@ class TetrisAction(IAction):
         return str(self._action_type)
 
     def __eq__(self, other):
-        return self._action_type == other._action_type
-
-#
-# class TransitionModel:
-#     @staticmethod
-#     def transition(world, action: IAction):
-#         world_copy = world.deepcopy()
-#         action.apply(world_copy)
-#         return world_copy
+        return self._action_type == getattr(other, "_action_type")
 
 
 @dataclass

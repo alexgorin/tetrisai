@@ -1,5 +1,8 @@
+"""
+Running the game with different agents
+"""
 from agent import (
-    ReflexiveHierarchicalAgent, PlanningOneMoveHierarchicalAgent, ProbabilisticPlanningHierarchicalAgent,
+    ReflexiveHierarchicalAgent, PlanningTwoMovesHierarchicalAgent, ProbabilisticPlanningHierarchicalAgent,
     LimitedProbabilisticPlanningHierarchicalAgent
 )
 from features import FringeSmoothness, HoleCount, EmptyRowsCount, AverageHeight

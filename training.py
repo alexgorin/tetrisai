@@ -1,4 +1,6 @@
-import itertools
+"""
+Fitting the feature weights with genetic algorithm
+"""
 import time
 from multiprocessing import Pool
 
@@ -9,7 +11,6 @@ from agent import ReflexiveHierarchicalAgent, IAgent
 from features import FringeSmoothness, HoleCount, EmptyRowsCount, AverageHeight
 from utility import Utility
 from world import Config, World
-import functools
 
 
 def simulate_game(world: World, agent: IAgent, max_iterations: int = 10000) -> int:

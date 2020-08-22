@@ -12,11 +12,11 @@ def avg(elements: List):
     return sum(elements) / len(elements)
 
 
-def random_utility(world: World):
-    return np.random.randint(0, 10000)
+def random_utility(_) -> float:
+    return float(np.random.randint(0, 10000))
 
 
-def trivial_utility(world: World):
+def trivial_utility(world: World) -> float:
     empty_rows_count = 0
     first_non_empty_row_sum = 0
     for row in world.board.map_fragment:
@@ -55,6 +55,10 @@ class TetrisStateTree(StateTree):
 
 
 class ReflexiveHierarchicalAgent(IAgent):
+    """
+    Chooses the action with highest utility.
+    Returns only the first one and recalculates when the new figure is known.
+    """
     def __init__(self, utility: Callable):
         self._plan: List[TetrisAction] = []
         self.utility = utility
@@ -76,7 +80,10 @@ class ReflexiveHierarchicalAgent(IAgent):
         return state_tree.max(depth_limit=1).path[0].unroll(world)
 
 
-class PlanningOneMoveHierarchicalAgent(ReflexiveHierarchicalAgent):
+class PlanningTwoMovesHierarchicalAgent(ReflexiveHierarchicalAgent):
+    """
+    Chooses the combination of 2 moves with highest utility
+    """
     def _new_plan(self, world) -> List[TetrisAction]:
         state_tree = TetrisStateTree(
             TetrisWorldNode(world),
@@ -86,6 +93,12 @@ class PlanningOneMoveHierarchicalAgent(ReflexiveHierarchicalAgent):
 
 
 class ProbabilisticPlanningHierarchicalAgent(ReflexiveHierarchicalAgent):
+    """
+    Chooses the combination of 2 moves with highest probabilistic utility.
+    Probabilistic utility is calculated as average utility over possible next figures
+    that are not known yet.
+    Very slow even with multiprocessing.
+    """
     def __init__(self, utility: Callable, processes: int = 10):
         super().__init__(utility)
         self.pool = Pool(processes=processes) if processes > 0 else None
@@ -97,7 +110,7 @@ class ProbabilisticPlanningHierarchicalAgent(ReflexiveHierarchicalAgent):
     def __setstate__(self, state):
         self._plan, self.utility = state
 
-    def _probabilistic_utility(self, world: World):
+    def _probabilistic_utility(self, world: World) -> float:
         utilities_for_next_figure = []
         eval_strategy = SimpleEvaluationStrategy(self.utility)
         for figure in world.figure_factory.figures:
@@ -106,7 +119,7 @@ class ProbabilisticPlanningHierarchicalAgent(ReflexiveHierarchicalAgent):
             state_tree = TetrisStateTree(TetrisWorldNode(world_copy), eval_strategy)
             max_utility = max((value[0] for node, value in eval_strategy.node_values(state_tree.leaves(depth=1))))
             utilities_for_next_figure.append(max_utility)
-        # TODO: weights if the distribution is not uniform
+        # add weights if the distribution is not uniform
         return avg(utilities_for_next_figure)
 
     def _new_plan(self, world) -> List[TetrisAction]:
@@ -118,6 +131,12 @@ class ProbabilisticPlanningHierarchicalAgent(ReflexiveHierarchicalAgent):
 
 
 class LimitedProbabilisticPlanningHierarchicalAgent(ProbabilisticPlanningHierarchicalAgent):
+    """
+    Optimization of ProbabilisticPlanningHierarchicalAgent.
+    Calculates a set of moves with highest utility the same way PlanningTwoMovesHierarchicalAgent does.
+    Then chooses the best move using probabilistic utility like ProbabilisticPlanningHierarchicalAgent.
+    Fast enough to work real-time, and performs significantly better than PlanningTwoMovesHierarchicalAgent.
+    """
     def __init__(self, utility: Callable, processes: int = 10):
         super().__init__(utility, processes)
         self.evaluation_strategy = ParallelEvaluationStrategy(utility)

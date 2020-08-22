@@ -49,7 +49,6 @@ class FringeSmoothness(Feature):
         fringe = self._fringe(world)
         discrepancies = 0
         for i in range(len(fringe) - 1):
-            # discrepancies += abs(fringe[i] - fringe[i + 1])
             discrepancies += 1 if fringe[i + 1] != fringe[i] else 0
         return 1 / (discrepancies + 1)
 

@@ -1,6 +1,8 @@
-from copy import deepcopy
+"""
+Tetris world with all rules
+"""
 from dataclasses import dataclass
-from typing import Tuple, List
+from typing import List
 
 import numpy as np
 
